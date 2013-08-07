@@ -60,6 +60,7 @@
     <Compile Include="MystWorld.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TileEntityCleaner.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -70,7 +71,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Substrate-1.3.7\SubstrateCS\Substrate %28NET4%29.csproj">
+    <ProjectReference Include="..\..\SharpDevelop Projects\Substrate-1.3.7\SubstrateCS\Substrate %28NET4%29.csproj">
       <Project>{7264A1C4-AB4A-4437-B252-7379B98B5509}</Project>
       <Name>Substrate %28NET4%29</Name>
     </ProjectReference>

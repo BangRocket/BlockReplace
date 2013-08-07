@@ -1,10 +1,9 @@
 ﻿/*
  * Created by SharpDevelop.
- * User: Joshua
+ * User: Joshua Heidorn
  * Date: 8/2/2013
  * Time: 8:26 PM
  * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
 using System.Collections.Generic;
@@ -13,9 +12,30 @@ using Substrate;
 using Substrate.Core;
 using Substrate.Nbt;
 
-namespace BlockReplace
+namespace Mod
 {
-	   // Convenience class -- like the BlockType class, it's not required that you define this
+	public class IronChest
+	{
+		public static void	Register()
+		{
+			Substrate.TileEntityFactory.Register(TileEntityIronChest.TypeId,typeof(TileEntityIronChest));
+			Substrate.TileEntityFactory.Register(TileEntityCopperChest.TypeId,typeof(TileEntityCopperChest));
+			Substrate.TileEntityFactory.Register(TileEntityGoldChest.TypeId,typeof(TileEntityGoldChest));
+			Substrate.TileEntityFactory.Register(TileEntitySilverChest.TypeId,typeof(TileEntitySilverChest));
+			Substrate.TileEntityFactory.Register(TileEntityDiamondChest.TypeId,typeof(TileEntityDiamondChest));
+			Substrate.TileEntityFactory.Register(TileEntityCrystalChest.TypeId,typeof(TileEntityCrystalChest));
+			
+			// Creating a BlockInfo (or BlockInfoEx) will also automatically register the
+			// block ID, lighting, and opacity data with internal tables in the BlockInfo
+			BlockInfoEx IronChest = (BlockInfoEx) new BlockInfoEx(BlockTypeM.IRON_CHEST, "IronChest").SetOpacity(0);
+			
+			// You can redefine already-registered blocks at any time by creating a new
+			// BlockInfo object with the given ID.
+			IronChest.SetTileEntity("IRON");
+		}
+	}
+	
+	// Convenience class -- like the BlockType class, it's not required that you define this
     static class BlockTypeM
     {
         public static int IRON_CHEST = 181;
@@ -35,7 +55,7 @@ namespace BlockReplace
             get { return "IRON"; }
         }
 
-        private const int _CAPACITY = 54;
+        private int _CAPACITY = 54;
 
         private ItemCollection _items;
 
@@ -52,7 +72,7 @@ namespace BlockReplace
 
         public TileEntityIronChest (TileEntity te)
             : base(te)
-        {
+        {    	
             TileEntityIronChest tec = te as TileEntityIronChest;
             if (tec != null) {
                 _items = tec._items.Copy();
