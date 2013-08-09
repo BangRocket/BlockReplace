@@ -12,7 +12,7 @@ using Substrate.Core;
 using Substrate.TileEntities;
 using Substrate.Nbt;
 
-using Mod;
+using Mod.IronChest;
 
 // This example replaces all instances of one block ID with another in a world.
 // Substrate will handle all of the lower-level headaches that can pop up, such
@@ -191,8 +191,8 @@ namespace BlockReplace
 			//            dimStack.Push(Dimension.NETHER);
 			//            dimChunkManagers.Push(world.GetChunkManager(Dimension.THE_END));
 			//            dimStack.Push(Dimension.THE_END);
-			            dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
-			            dimStack.Push(Dimension.DEFAULT);
+			//            dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
+			//            dimStack.Push(Dimension.DEFAULT);
 
 			if (mode == "r")
 			{
@@ -256,7 +256,7 @@ namespace BlockReplace
 
 									if (TE != null)
 									{
-										if (TileEntityCleaner.DeleteList.Contains(TE.ID))
+										if (TEC.getDeleteList().Contains(TE.ID))
 										{
 											using (System.IO.StreamWriter coverFile = File.AppendText(@"covers.txt"))
 											{
@@ -339,6 +339,7 @@ namespace BlockReplace
 				chestTypes.Add("DIAMOND");
 				chestTypes.Add("GOLD");
 				chestTypes.Add("SILVER");
+
 				//chestTypes.Add("Ender Chest");
 				//chestTypes.Add("Personal Chest");
 				
@@ -367,17 +368,22 @@ namespace BlockReplace
 							int currentData = chunk.Blocks.GetData(x,y,z);
 							TileEntity TE = chunk.Blocks.GetTileEntity(x, y, z);
 							
-							if ((TE != null) && (TileEntityCleaner.DeleteList.Contains(TE.ID)))
+							TileEntityCleaner TC = new TileEntityCleaner();
+							
+							if ((TE != null) && (TC.getDeleteList().Contains(TE.ID)))
 							{
 								chunk.Blocks.ClearTileEntity(x,y,z);
 								Console.WriteLine("Tile Entity {0} found, cleared at {1},{2},{3}", TE.ID, x, y, z);
 							}
 							
+							//if (TE != null)
+							//	Console.WriteLine(TE.ID.ToString());
+							
 							if ((TE != null) && (chestTypes.Contains(TE.ID)))
-							{			
-								TileEntityIronChest temp = chunk.Blocks.GetTileEntity(x,y,z) as TileEntityIronChest;								
+							{											
+								TileEntityIChest temp = IronChest.getChestType(TE,currentData);
 								
-								for (int i = 0; i < temp.Items.Capacity; i++)
+								for (int i = 0; i <= temp.Items.Capacity; i++)
 								{
 									Item item = temp.Items[i];
 									if (item != null)
@@ -400,6 +406,32 @@ namespace BlockReplace
 									}
 									
 								}
+								
+//								switch (currentData)
+//								{
+//									case 0:
+//										IronChest.setTileEntity("IRON");
+//										break;
+//									case 1:
+//										IronChest.setTileEntity("GOLD");
+//										break;
+//									case 2:
+//										IronChest.setTileEntity("DIAMOND");
+//										break;
+//									case 3:
+//										IronChest.setTileEntity("COPPER");
+//										break;
+//									case 4:
+//										IronChest.setTileEntity("SILVER");
+//										break;
+//									case 5:
+//										IronChest.setTileEntity("CRYSTAL");
+//										break;
+//									default:
+//										IronChest.setTileEntity("IRON");
+//										break;
+//								}
+								
 								chunk.Blocks.SetTileEntity(x,y,z, temp);
 							}
 							

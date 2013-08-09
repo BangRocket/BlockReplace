@@ -16,7 +16,7 @@ namespace BlockReplace
 	/// </summary>
 	public class TileEntityCleaner
 	{	
-		public static List<string> DeleteList = new List<string>();
+		List<string> DeleteList = new List<string>();
 		
 		public TileEntityCleaner()
 		{
@@ -40,6 +40,10 @@ namespace BlockReplace
 			DeleteList.Add("RPDeploy");
 			DeleteList.Add("RPTranspose");
 		}
-		
+				
+		public List<string> getDeleteList()
+		{
+			return DeleteList;
+		}
 	}
 }

@@ -7,16 +7,16 @@
  */
 using System;
 using System.Collections.Generic;
-
+using System.Runtime.Remoting.Messaging;
 using Substrate;
 using Substrate.Core;
 using Substrate.Nbt;
 
-namespace Mod
+namespace Mod.IronChest
 {
 	public class IronChest
 	{
-		public static void	Register()
+		public static void Register()
 		{
 			Substrate.TileEntityFactory.Register(TileEntityIronChest.TypeId,typeof(TileEntityIronChest));
 			Substrate.TileEntityFactory.Register(TileEntityCopperChest.TypeId,typeof(TileEntityCopperChest));
@@ -33,6 +33,64 @@ namespace Mod
 			// BlockInfo object with the given ID.
 			IronChest.SetTileEntity("IRON");
 		}
+		
+		public static void setTileEntity(string s)
+		{
+			BlockInfoEx IronChest = (BlockInfoEx) new BlockInfoEx(BlockTypeM.IRON_CHEST, "IronChest").SetOpacity(0);
+			IronChest.SetTileEntity(s);
+		}
+		
+		public static TileEntityIChest getChestType(TileEntity te, int blockdata)
+		{
+			switch (blockdata)
+			{
+					
+				case 0:
+					TileEntityIronChest _itec = te as TileEntityIronChest;
+					return _itec;
+				case 1:
+					TileEntityGoldChest _gtec = te as TileEntityGoldChest;
+					return _gtec;
+				case 2:
+					TileEntityDiamondChest _dtec = te as TileEntityDiamondChest;
+					return _dtec;
+				case 3:
+					TileEntityCopperChest _cptec = te as TileEntityCopperChest;
+					return _cptec;
+				case 4:
+					TileEntitySilverChest _stec = te as TileEntitySilverChest;
+					return _stec;
+				case 5:
+					TileEntityCrystalChest _ctec = te as TileEntityCrystalChest;
+					return _ctec;
+				default:
+					TileEntityIronChest tec = te as TileEntityIronChest;
+					return tec;
+			}
+		}
+		
+		public string getType(int data)
+		{
+			switch (data)
+			{
+				case 0:
+					return "IRON";
+				case 1:
+					return "GOLD";
+				case 2: 
+					return "DIAMOND";
+				case 3:
+					return "COPPER";
+				case 4:
+					return "SILVER";
+				case 5:
+					return "CRYSTAL";
+				default:
+					return "IRON";
+			}
+				
+		}
+		
 	}
 	
 	// Convenience class -- like the BlockType class, it's not required that you define this
@@ -41,7 +99,91 @@ namespace Mod
         public static int IRON_CHEST = 181;
     }
 	
-	public class TileEntityIronChest : TileEntity, IItemContainer
+   	abstract public class TileEntityIChest : TileEntity, IItemContainer
+    {
+   		public static readonly SchemaNodeCompound ChestSchema;
+   		
+   		public static string TypeId;
+   		
+   		private int _CAPACITY = 108;
+   		
+   		private ItemCollection _items;
+   		
+        protected TileEntityIChest (string id)
+            : base(id)
+        {
+            _items = new ItemCollection(_CAPACITY);
+        }
+
+        public TileEntityIChest ()
+            : this(TypeId)
+        {
+        }
+
+        public TileEntityIChest (TileEntity te)
+            : base(te)
+        {    	       	
+            TileEntityIChest tec = te as TileEntityIChest;
+            if (tec != null) {
+                _items = tec._items.Copy();
+            }
+            else {
+                _items = new ItemCollection(_CAPACITY);
+            }
+        }
+        
+                #region ICopyable<TileEntity> Members
+
+        public override TileEntity Copy ()
+        {
+            return new TileEntityIronChest(this);
+        }
+
+        #endregion
+
+
+        #region IItemContainer Members
+
+        public ItemCollection Items
+        {
+            get { return _items; }
+        }
+
+        #endregion
+
+
+        #region INBTObject<TileEntity> Members
+
+        public override TileEntity LoadTree (TagNode tree)
+        {
+            TagNodeCompound ctree = tree as TagNodeCompound;
+            if (ctree == null || base.LoadTree(tree) == null) {
+                return null;
+            }
+
+            TagNodeList items = ctree["Items"].ToTagList();
+            _items = new ItemCollection(_CAPACITY).LoadTree(items);
+
+            return this;
+        }
+
+        public override TagNode BuildTree ()
+        {
+            TagNodeCompound tree = base.BuildTree() as TagNodeCompound;
+            tree["Items"] = _items.BuildTree();
+
+            return tree;
+        }
+
+        public override bool ValidateTree (TagNode tree)
+        {
+            return new NbtVerifier(tree, ChestSchema).Verify();
+        }
+
+        #endregion
+   	}
+    
+   	public class TileEntityIronChest : TileEntityIChest
     {
         public static readonly SchemaNodeCompound ChestSchema = TileEntity.Schema.MergeInto(new SchemaNodeCompound("")
         {
@@ -72,7 +214,7 @@ namespace Mod
 
         public TileEntityIronChest (TileEntity te)
             : base(te)
-        {    	
+        {    	       	
             TileEntityIronChest tec = te as TileEntityIronChest;
             if (tec != null) {
                 _items = tec._items.Copy();
@@ -81,7 +223,7 @@ namespace Mod
                 _items = new ItemCollection(_CAPACITY);
             }
         }
-
+            
         #region ICopyable<TileEntity> Members
 
         public override TileEntity Copy ()
