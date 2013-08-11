@@ -41,27 +41,6 @@ namespace BlockReplace
 
 			List<string> TEList = new List<string>();
 			List<int> BlockList = new List<int>();
-//			List<string> DeleteList = new List<string>();
-//			
-//			DeleteList.Add("RPGrate");
-//			DeleteList.Add("RPPipe");
-//			DeleteList.Add("RPPump");
-//			DeleteList.Add("Water Strainer");
-//			DeleteList.Add("RPFilter");
-//			DeleteList.Add("RPSorter");
-//			DeleteList.Add("RPGRSTube");
-//			DeleteList.Add("RPMulti");
-//			DeleteList.Add("RPWind");
-//
-//			DeleteList.Add("Redwire");
-//			DeleteList.Add("Bluewire");
-//			DeleteList.Add("Covers");
-//			DeleteList.Add("RPTube");
-//			DeleteList.Add("RPRSTube");
-//			DeleteList.Add("RPSolar");
-//			DeleteList.Add("RPBatBox");
-//			DeleteList.Add("RPDeploy");
-//			DeleteList.Add("RPTranspose");
 
 			// Open our world
 			MystWorld world = MystWorld.Open(input);
@@ -174,10 +153,10 @@ namespace BlockReplace
 			foreach (int dim in mystAges)
 			{
 				//Console.WriteLine(dim.ToString());
-				if (dim == 4){
-					dimChunkManagers.Push(world.GetMystChunkManager(dim));
-					dimStack.Push(dim);
-				}
+				//if (dim == 4){
+				dimChunkManagers.Push(world.GetMystChunkManager(dim));
+				dimStack.Push(dim);
+				//}
 			}
 
 			//				//leave this go until you can fix the -1 issue and write proper handling for it.
@@ -187,12 +166,12 @@ namespace BlockReplace
 			//				}
 
 			//add Vanilla ChunkManagers to the list too
-			//            dimChunkManagers.Push(world.GetChunkManager(Dimension.NETHER));
-			//            dimStack.Push(Dimension.NETHER);
-			//            dimChunkManagers.Push(world.GetChunkManager(Dimension.THE_END));
-			//            dimStack.Push(Dimension.THE_END);
-			//            dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
-			//            dimStack.Push(Dimension.DEFAULT);
+			dimChunkManagers.Push(world.GetChunkManager(Dimension.NETHER));
+			dimStack.Push(Dimension.NETHER);
+			dimChunkManagers.Push(world.GetChunkManager(Dimension.THE_END));
+			dimStack.Push(Dimension.THE_END);
+			dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
+			dimStack.Push(Dimension.DEFAULT);
 
 			if (mode == "r")
 			{
@@ -330,18 +309,6 @@ namespace BlockReplace
 
 				currentchunk++;
 				char[] metadata = {':'};
-				List<string> chestTypes = new List<string>(7);
-				
-				//chestTypes.Add("Chest");
-				chestTypes.Add("IRON");
-				chestTypes.Add("COPPER");
-				chestTypes.Add("CRYSTAL");
-				chestTypes.Add("DIAMOND");
-				chestTypes.Add("GOLD");
-				chestTypes.Add("SILVER");
-
-				//chestTypes.Add("Ender Chest");
-				//chestTypes.Add("Personal Chest");
 				
 				string blockOutput = "";
 				string tileOutput = "";
@@ -370,69 +337,96 @@ namespace BlockReplace
 							
 							TileEntityCleaner TC = new TileEntityCleaner();
 							
-							if ((TE != null) && (TC.getDeleteList().Contains(TE.ID)))
+							if (TE != null)
 							{
-								chunk.Blocks.ClearTileEntity(x,y,z);
-								Console.WriteLine("Tile Entity {0} found, cleared at {1},{2},{3}", TE.ID, x, y, z);
-							}
-							
-							//if (TE != null)
-							//	Console.WriteLine(TE.ID.ToString());
-							
-							if ((TE != null) && (chestTypes.Contains(TE.ID)))
-							{											
-								TileEntityIChest temp = IronChest.getChestType(TE,currentData);
 								
-								for (int i = 0; i <= temp.Items.Capacity; i++)
+								if (TC.getDeleteList().Contains(TE.ID))
 								{
-									Item item = temp.Items[i];
-									if (item != null)
+									chunk.Blocks.ClearTileEntity(x,y,z);
+									Console.WriteLine("Tile Entity {0} found, cleared at {1},{2},{3}", TE.ID, x, y, z);
+								}
+								
+								//if (TE != null)
+								//	Console.WriteLine(TE.ID.ToString());
+								
+								if (IronChest.ChestTypes.Contains(TE.ID))
+								{
+									//IronChest.ChestList.Push(TE);
+									var temp = IronChest.getChestType(TE);
+									
+									for (int i = 0; i <= temp.Items.Capacity; i++)
 									{
-										//Console.WriteLine(item.ID.ToString());
-										//Console.WriteLine(item.Damage.ToString());
-										//Console.ReadLine();
-										
-										string _tmpChestItem = item.ID.ToString() + ":" + item.Damage.ToString();
-										//Console.WriteLine(_tmpChestItem);
-										
-										if (ReplaceList.TryGetValue(_tmpChestItem,out tileOutput))
+										Item item = temp.Items[i];
+										if (item != null)
 										{
-											string[] _strKey = tileOutput.Split(metadata);
+											string _tmpChestItem = item.ID.ToString() + ":" + item.Damage.ToString();
+											//Console.WriteLine(_tmpChestItem);
 											
-											temp.Items[i].ID = Convert.ToInt32(_strKey.GetValue(0));
-											temp.Items[i].Damage = Convert.ToInt32(_strKey.GetValue(1));
+											if (ReplaceList.TryGetValue(_tmpChestItem,out tileOutput))
+											{
+												string[] _strKey = tileOutput.Split(metadata);
+												
+												temp.Items[i].ID = Convert.ToInt32(_strKey.GetValue(0));
+												temp.Items[i].Damage = Convert.ToInt32(_strKey.GetValue(1));
+											}
+											
 										}
 										
 									}
 									
+									switch (currentData)
+									{
+										case 0:
+											IronChest.SetTileEntity("IRON");
+											break;
+										case 1:
+											IronChest.SetTileEntity("GOLD");
+											break;
+										case 2:
+											IronChest.SetTileEntity("DIAMOND");
+											break;
+										case 3:
+											IronChest.SetTileEntity("COPPER");
+											break;
+										case 4:
+											IronChest.SetTileEntity("SILVER");
+											break;
+										case 5:
+											IronChest.SetTileEntity("CRYSTAL");
+											break;
+										default:
+											IronChest.SetTileEntity("IRON");
+											break;
+									}
+									
+									chunk.Blocks.SetTileEntity(x,y,z,temp);
 								}
 								
-//								switch (currentData)
-//								{
-//									case 0:
-//										IronChest.setTileEntity("IRON");
-//										break;
-//									case 1:
-//										IronChest.setTileEntity("GOLD");
-//										break;
-//									case 2:
-//										IronChest.setTileEntity("DIAMOND");
-//										break;
-//									case 3:
-//										IronChest.setTileEntity("COPPER");
-//										break;
-//									case 4:
-//										IronChest.setTileEntity("SILVER");
-//										break;
-//									case 5:
-//										IronChest.setTileEntity("CRYSTAL");
-//										break;
-//									default:
-//										IronChest.setTileEntity("IRON");
-//										break;
-//								}
-								
-								chunk.Blocks.SetTileEntity(x,y,z, temp);
+								if (TE.ID == "Chest")
+								{
+									TileEntityChest temp = new TileEntityChest(TE);
+									
+									for (int i = 0; i <= temp.Items.Capacity; i++)
+									{
+										Item item = temp.Items[i];
+										if (item != null)
+										{
+											string _tmpChestItem = item.ID.ToString() + ":" + item.Damage.ToString();
+											//Console.WriteLine(_tmpChestItem);
+											
+											if (ReplaceList.TryGetValue(_tmpChestItem,out tileOutput))
+											{
+												string[] _strKey = tileOutput.Split(metadata);
+												
+												temp.Items[i].ID = Convert.ToInt32(_strKey.GetValue(0));
+												temp.Items[i].Damage = Convert.ToInt32(_strKey.GetValue(1));
+											}
+											
+										}
+										
+									}
+									chunk.Blocks.SetTileEntity(x,y,z, temp);
+								}
 							}
 							
 							string currentBlock = currentID.ToString() + ":" + currentData.ToString();
@@ -452,9 +446,12 @@ namespace BlockReplace
 //								                  x, y, z);
 								
 							}
+							
 						}
 					}
 				}
+				//ProcessModBlocks();
+				
 				// Save the chunk
 				rcm.Save();
 				sw.Stop();

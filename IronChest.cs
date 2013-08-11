@@ -7,7 +7,7 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
+
 using Substrate;
 using Substrate.Core;
 using Substrate.Nbt;
@@ -16,8 +16,37 @@ namespace Mod.IronChest
 {
 	public class IronChest
 	{
+		
+		// Convenience class -- like the BlockType class, it's not required that you define this
+		static class BlockTypeM
+		{
+			public static int IRON_CHEST = 181;
+		}
+		
+		private static List<string> _chestTypes = new List<string>{"IRON", "COPPER", "CRYSTAL", "DIAMOND", "GOLD", "SILVER"};
+		
+		public static List<string> ChestTypes
+		{
+			get {return _chestTypes;}
+		}
+		
+		private static Stack<TileEntity> _chestList = new Stack<TileEntity>();
+		
+		public static Stack<TileEntity> ChestList
+		{
+			get {return _chestList;}
+		}
+				
+		public const int IRON = 0;
+		public const int GOLD = 1;
+		public const int DIAMOND = 2;
+		public const int COPPER = 3;
+		public const int SILVER = 4;
+		public const int CRYSTAL = 5;
+		
 		public static void Register()
 		{
+			
 			Substrate.TileEntityFactory.Register(TileEntityIronChest.TypeId,typeof(TileEntityIronChest));
 			Substrate.TileEntityFactory.Register(TileEntityCopperChest.TypeId,typeof(TileEntityCopperChest));
 			Substrate.TileEntityFactory.Register(TileEntityGoldChest.TypeId,typeof(TileEntityGoldChest));
@@ -31,10 +60,10 @@ namespace Mod.IronChest
 			
 			// You can redefine already-registered blocks at any time by creating a new
 			// BlockInfo object with the given ID.
-			IronChest.SetTileEntity("IRON");
+			//IronChest.SetTileEntity("IRON");
 		}
 		
-		public static void setTileEntity(string s)
+		public static void SetTileEntity(string s)
 		{
 			BlockInfoEx IronChest = (BlockInfoEx) new BlockInfoEx(BlockTypeM.IRON_CHEST, "IronChest").SetOpacity(0);
 			IronChest.SetTileEntity(s);
@@ -44,7 +73,6 @@ namespace Mod.IronChest
 		{
 			switch (blockdata)
 			{
-					
 				case 0:
 					TileEntityIronChest _itec = te as TileEntityIronChest;
 					return _itec;
@@ -69,39 +97,44 @@ namespace Mod.IronChest
 			}
 		}
 		
-		public string getType(int data)
+		public static TileEntityIChest getChestType(TileEntity te)
 		{
-			switch (data)
+			switch (te.ID)
 			{
-				case 0:
-					return "IRON";
-				case 1:
-					return "GOLD";
-				case 2: 
-					return "DIAMOND";
-				case 3:
-					return "COPPER";
-				case 4:
-					return "SILVER";
-				case 5:
-					return "CRYSTAL";
+				case "IRON":
+					TileEntityIronChest _itec = te as TileEntityIronChest;
+					return _itec;
+				case "GOLD":
+					TileEntityGoldChest _gtec = te as TileEntityGoldChest;
+					return _gtec;
+				case "DIAMOND":
+					TileEntityDiamondChest _dtec = te as TileEntityDiamondChest;
+					return _dtec;
+				case "COPPER":
+					TileEntityCopperChest _cptec = te as TileEntityCopperChest;
+					return _cptec;
+				case "SILVER":
+					TileEntitySilverChest _stec = te as TileEntitySilverChest;
+					return _stec;
+				case "CRYSTAL":
+					TileEntityCrystalChest _ctec = te as TileEntityCrystalChest;
+					return _ctec;
 				default:
-					return "IRON";
+					TileEntityIronChest tec = te as TileEntityIronChest;
+					return tec;
 			}
-				
 		}
-		
 	}
-	
-	// Convenience class -- like the BlockType class, it's not required that you define this
-    static class BlockTypeM
-    {
-        public static int IRON_CHEST = 181;
-    }
-	
+			
    	abstract public class TileEntityIChest : TileEntity, IItemContainer
     {
-   		public static readonly SchemaNodeCompound ChestSchema;
+   		public static readonly SchemaNodeCompound ChestSchema = TileEntity.Schema.MergeInto(new SchemaNodeCompound("")
+   		{
+   			new SchemaNodeString("id", TypeId),
+   			new SchemaNodeScaler("facing", TagType.TAG_INT),
+   			new SchemaNodeList("Items", TagType.TAG_COMPOUND, ItemCollection.Schema),
+   		});
+
    		
    		public static string TypeId;
    		
@@ -185,14 +218,8 @@ namespace Mod.IronChest
     
    	public class TileEntityIronChest : TileEntityIChest
     {
-        public static readonly SchemaNodeCompound ChestSchema = TileEntity.Schema.MergeInto(new SchemaNodeCompound("")
-        {
-            new SchemaNodeString("id", TypeId),
-            new SchemaNodeScaler("facing", TagType.TAG_INT),
-            new SchemaNodeList("Items", TagType.TAG_COMPOUND, ItemCollection.Schema),
-        });
 
-        public static string TypeId 
+        new public static string TypeId 
         {
             get { return "IRON"; }
         }
@@ -213,121 +240,196 @@ namespace Mod.IronChest
         }
 
         public TileEntityIronChest (TileEntity te)
-            : base(te)
-        {    	       	
-            TileEntityIronChest tec = te as TileEntityIronChest;
-            if (tec != null) {
-                _items = tec._items.Copy();
-            }
-            else {
-                _items = new ItemCollection(_CAPACITY);
-            }
-        }
-            
-        #region ICopyable<TileEntity> Members
-
-        public override TileEntity Copy ()
+        	: base(te)
         {
-            return new TileEntityIronChest(this);
+        	TileEntityIronChest tec = te as TileEntityIronChest;
+        	if (tec != null) {
+        		_items = tec._items.Copy();
+        	}
+        	else {
+        		_items = new ItemCollection(_CAPACITY);
+        	}
         }
+   	}
+   	
+   	public class TileEntityCopperChest : TileEntityIChest
+   	{
+   		new public static string TypeId
+   		{
+   			get { return "COPPER"; }
+   		}
+   		
+   		private const int _CAPACITY = 45;
+   		
+   		private ItemCollection _items;
+   		
+   		protected TileEntityCopperChest (string id)
+   			: base(id)
+   		{
+   			_items = new ItemCollection(_CAPACITY);
+   		}
 
-        #endregion
+   		public TileEntityCopperChest ()
+   			: this(TypeId)
+   		{
+   		}
+   		
+   		public TileEntityCopperChest (TileEntity te)
+   			: base(te)
+   		{
+   			TileEntityCopperChest tec = te as TileEntityCopperChest;
+   			if (tec != null) {
+   				_items = tec._items.Copy();
+   			}
+   			else {
+   				_items = new ItemCollection(_CAPACITY);
+   			}
+   		}
+   		
+   	}
+   	
+   	public class TileEntitySilverChest : TileEntityIChest
+   	{
+   		new public static string TypeId
+   		{
+   			get { return "SILVER"; }
+   		}
+   		
+   		private const int _CAPACITY = 72;
+   		
+   		private ItemCollection _items;
+   		
+   		protected TileEntitySilverChest (string id)
+   			: base(id)
+   		{
+   			_items = new ItemCollection(_CAPACITY);
+   		}
 
+   		public TileEntitySilverChest ()
+   			: this(TypeId)
+   		{
+   		}
+   		
+   		public TileEntitySilverChest (TileEntity te)
+   			: base(te)
+   		{
+   			TileEntitySilverChest tec = te as TileEntitySilverChest;
+   			if (tec != null) {
+   				_items = tec._items.Copy();
+   			}
+   			else {
+   				_items = new ItemCollection(_CAPACITY);
+   			}
+   		}
+   		
+   	}
+   	
+   	public class TileEntityGoldChest : TileEntityIChest
+   	{
+   		new public static string TypeId
+   		{
+   			get { return "GOLD"; }
+   		}
+   		
+   		private const int _CAPACITY = 81;
+   		
+   		private ItemCollection _items;
+   		
+   		protected TileEntityGoldChest (string id)
+   			: base(id)
+   		{
+   			_items = new ItemCollection(_CAPACITY);
+   		}
 
-        #region IItemContainer Members
+   		public TileEntityGoldChest ()
+   			: this(TypeId)
+   		{
+   		}
+   		
+   		public TileEntityGoldChest (TileEntity te)
+   			: base(te)
+   		{
+   			TileEntityGoldChest tec = te as TileEntityGoldChest;
+   			if (tec != null) {
+   				_items = tec._items.Copy();
+   			}
+   			else {
+   				_items = new ItemCollection(_CAPACITY);
+   			}
+   		}
+   		
+   	}
+   	
+   	public class TileEntityCrystalChest : TileEntityIChest
+   	{
+   		new public static string TypeId
+   		{
+   			get { return "CRYSTAL"; }
+   		}
+   		
+   		private const int _CAPACITY = 108;
+   		
+   		private ItemCollection _items;
+   		
+   		protected TileEntityCrystalChest (string id)
+   			: base(id)
+   		{
+   			_items = new ItemCollection(_CAPACITY);
+   		}
 
-        public ItemCollection Items
-        {
-            get { return _items; }
-        }
+   		public TileEntityCrystalChest ()
+   			: this(TypeId)
+   		{
+   		}
+   		
+   		public TileEntityCrystalChest (TileEntity te)
+   			: base(te)
+   		{
+   			TileEntityCrystalChest tec = te as TileEntityCrystalChest;
+   			if (tec != null) {
+   				_items = tec._items.Copy();
+   			}
+   			else {
+   				_items = new ItemCollection(_CAPACITY);
+   			}
+   		}
+   		
+   	}
+   	
+   	public class TileEntityDiamondChest : TileEntityIChest
+   	{
+   		new public static string TypeId
+   		{
+   			get { return "DIAMOND"; }
+   		}
+   		
+   		private const int _CAPACITY = 108;
+   		
+   		private ItemCollection _items;
+   		
+   		protected TileEntityDiamondChest (string id)
+   			: base(id)
+   		{
+   			_items = new ItemCollection(_CAPACITY);
+   		}
 
-        #endregion
-
-
-        #region INBTObject<TileEntity> Members
-
-        public override TileEntity LoadTree (TagNode tree)
-        {
-            TagNodeCompound ctree = tree as TagNodeCompound;
-            if (ctree == null || base.LoadTree(tree) == null) {
-                return null;
-            }
-
-            TagNodeList items = ctree["Items"].ToTagList();
-            _items = new ItemCollection(_CAPACITY).LoadTree(items);
-
-            return this;
-        }
-
-        public override TagNode BuildTree ()
-        {
-            TagNodeCompound tree = base.BuildTree() as TagNodeCompound;
-            tree["Items"] = _items.BuildTree();
-
-            return tree;
-        }
-
-        public override bool ValidateTree (TagNode tree)
-        {
-            return new NbtVerifier(tree, ChestSchema).Verify();
-        }
-
-        #endregion
-    }
-	
-	public class TileEntityCopperChest : TileEntityIronChest
-	{
-		new public static string TypeId
-		{
-			get { return "COPPER"; }
-		}
-		
-		private const int _CAPACITY = 45;
-		
-	}
-	
-	public class TileEntitySilverChest : TileEntityIronChest
-	{
-		new public static string TypeId
-		{
-			get { return "SILVER"; }
-		}
-		
-		private const int _CAPACITY = 72;
-		
-	}
-	
-	public class TileEntityGoldChest : TileEntityIronChest
-	{
-		new public static string TypeId
-		{
-			get { return "GOLD"; }
-		}
-		
-		private const int _CAPACITY = 81;
-		
-	}
-	
-	public class TileEntityCrystalChest : TileEntityIronChest
-	{
-		new public static string TypeId
-		{
-			get { return "CRYSTAL"; }
-		}
-		
-		private const int _CAPACITY = 108;
-		
-	}
-	
-	public class TileEntityDiamondChest : TileEntityIronChest
-	{
-		new public static string TypeId
-		{
-			get { return "DIAMOND"; }
-		}
-		
-		private const int _CAPACITY = 108;
-		
-	}
+   		public TileEntityDiamondChest ()
+   			: this(TypeId)
+   		{
+   		}
+   		
+   		public TileEntityDiamondChest (TileEntity te)
+   			: base(te)
+   		{
+   			TileEntityDiamondChest tec = te as TileEntityDiamondChest;
+   			if (tec != null) {
+   				_items = tec._items.Copy();
+   			}
+   			else {
+   				_items = new ItemCollection(_CAPACITY);
+   			}
+   		}
+   		
+   	}
 	
 }
