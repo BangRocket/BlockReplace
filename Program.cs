@@ -153,10 +153,10 @@ namespace BlockReplace
 			foreach (int dim in mystAges)
 			{
 				//Console.WriteLine(dim.ToString());
-				//if (dim == 4){
+				if (dim == 4){
 				dimChunkManagers.Push(world.GetMystChunkManager(dim));
 				dimStack.Push(dim);
-				//}
+				}
 			}
 
 			//				//leave this go until you can fix the -1 issue and write proper handling for it.
@@ -166,12 +166,12 @@ namespace BlockReplace
 			//				}
 
 			//add Vanilla ChunkManagers to the list too
-			dimChunkManagers.Push(world.GetChunkManager(Dimension.NETHER));
-			dimStack.Push(Dimension.NETHER);
-			dimChunkManagers.Push(world.GetChunkManager(Dimension.THE_END));
-			dimStack.Push(Dimension.THE_END);
-			dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
-			dimStack.Push(Dimension.DEFAULT);
+			//dimChunkManagers.Push(world.GetChunkManager(Dimension.NETHER));
+			//dimStack.Push(Dimension.NETHER);
+			//dimChunkManagers.Push(world.GetChunkManager(Dimension.THE_END));
+			//dimStack.Push(Dimension.THE_END);
+			//dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
+			//dimStack.Push(Dimension.DEFAULT);
 
 			if (mode == "r")
 			{
@@ -296,6 +296,7 @@ namespace BlockReplace
 		{
 			int currentchunk = 0;
 			int chunktotal = 0;
+			Stack<string> _TEList = new Stack<string>();
 			
 			foreach (ChunkRef chunk in rcm)
 			{
@@ -348,6 +349,11 @@ namespace BlockReplace
 								
 								//if (TE != null)
 								//	Console.WriteLine(TE.ID.ToString());
+								
+								_TEList.Push(TE.ID);
+								
+//								if (TE.ID == "factory_barrel")
+//									Console.WriteLine("breakpoint");
 								
 								if (IronChest.ChestTypes.Contains(TE.ID))
 								{
@@ -492,6 +498,12 @@ namespace BlockReplace
 					Console.WriteLine("Mystcraft Age {0} (DIM{0}) completed.", dimnumber);
 					break;
 			}
+			
+			foreach (string s in _TEList)
+			{
+				Console.WriteLine(s);
+			}
+			
 		}
 	}
 }
