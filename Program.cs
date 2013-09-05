@@ -13,6 +13,7 @@ using Substrate.TileEntities;
 using Substrate.Nbt;
 
 using Mod.IronChest;
+using Mod.Factorization;
 
 // This example replaces all instances of one block ID with another in a world.
 // Substrate will handle all of the lower-level headaches that can pop up, such
@@ -37,6 +38,8 @@ namespace BlockReplace
 			string replacefile = args[2];
 
 			IronChest.Register();
+			Factorization.Register();
+			
 			TileEntityCleaner TEC = new TileEntityCleaner();
 
 			List<string> TEList = new List<string>();
@@ -153,10 +156,10 @@ namespace BlockReplace
 			foreach (int dim in mystAges)
 			{
 				//Console.WriteLine(dim.ToString());
-				if (dim == 4){
-				dimChunkManagers.Push(world.GetMystChunkManager(dim));
-				dimStack.Push(dim);
-				}
+				//if (dim == 4){
+				//dimChunkManagers.Push(world.GetMystChunkManager(dim));
+				//dimStack.Push(dim);
+				//}
 			}
 
 			//				//leave this go until you can fix the -1 issue and write proper handling for it.
@@ -166,12 +169,12 @@ namespace BlockReplace
 			//				}
 
 			//add Vanilla ChunkManagers to the list too
-			//dimChunkManagers.Push(world.GetChunkManager(Dimension.NETHER));
-			//dimStack.Push(Dimension.NETHER);
-			//dimChunkManagers.Push(world.GetChunkManager(Dimension.THE_END));
-			//dimStack.Push(Dimension.THE_END);
-			//dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
-			//dimStack.Push(Dimension.DEFAULT);
+//			dimChunkManagers.Push(world.GetChunkManager(Dimension.NETHER));
+//			dimStack.Push(Dimension.NETHER);
+//			dimChunkManagers.Push(world.GetChunkManager(Dimension.THE_END));
+//			dimStack.Push(Dimension.THE_END);
+			dimChunkManagers.Push(world.GetChunkManager(Dimension.DEFAULT));
+			dimStack.Push(Dimension.DEFAULT);
 
 			if (mode == "r")
 			{
@@ -350,10 +353,33 @@ namespace BlockReplace
 								//if (TE != null)
 								//	Console.WriteLine(TE.ID.ToString());
 								
-								_TEList.Push(TE.ID);
-								
-//								if (TE.ID == "factory_barrel")
-//									Console.WriteLine("breakpoint");
+								//_TEList.Push(TE.ID);
+
+								if (TE.ID == "factory_barrel")
+								{
+									Console.WriteLine("breakpoint");
+									
+									FactoryBarrel barrel = new FactoryBarrel(TE) as FactoryBarrel;
+									
+									//Console.WriteLine(test.Item.ID.ToString());
+									//Console.ReadLine();
+									
+									if (barrel.Item != null)
+									{
+										string _tmpBarrelItem = barrel.Item.ID.ToString() + ":" + barrel.Item.Damage.ToString();
+										
+										if (ReplaceList.TryGetValue(_tmpBarrelItem,out tileOutput))
+										{
+											string[] _strKey = tileOutput.Split(metadata);
+											
+											barrel.Item.ID = Convert.ToInt32(_strKey.GetValue(0));
+											barrel.Item.Damage = Convert.ToInt32(_strKey.GetValue(1));
+											
+											chunk.Blocks.SetTileEntity(x,y,z,barrel);
+										}
+									}
+									
+								}
 								
 								if (IronChest.ChestTypes.Contains(TE.ID))
 								{
@@ -436,7 +462,17 @@ namespace BlockReplace
 							}
 							
 							string currentBlock = currentID.ToString() + ":" + currentData.ToString();
-							
+
+                            if (currentBlock == "750")
+                            {
+                                if (currentData >= 4096)
+                                {
+                                    string _temp = currentBlock + ":" + currentData.ToString();
+                                    _TEList.Push(_temp);
+                                }
+                            }
+
+
 							if (ReplaceList.TryGetValue(currentBlock, out blockOutput))
 							{
 								string[] _strKey = blockOutput.Split(metadata);
